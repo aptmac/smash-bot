@@ -7,8 +7,8 @@ import socket, re, subprocess, os, time, threading, sys
 
 # Some basic variables used to configure the bot        
 server = "chat.freenode.net" # Server
-channel = "#TestingTesting123" # Channel
-botnick = "aptmac" # Your bots nick
+channel = "#SmashTO" # Channel
+botnick = "SM4SHBOT" # Your bots nick
 password = "smashbotpassword"
 lines = 0
 #regexes = [".*"]
