@@ -57,7 +57,7 @@ def help(name,topic=''):
   message = ''
   # if no help topic is specified, send general help message about the bot.
   if topic == '':
-    message = "This is where the help information would be displayed, if it existed." 
+    message = "Current valid functions include:\n!all <message> to send a message to everyone in the channel\n!bracket to get the current challonge url" 
   # if a help message is specified, let the user know it's not coded yet.
   else:
     message = "Feature not yet implemented, sorry. Please see the main help (message me with \'.help\')"
@@ -73,7 +73,7 @@ def all(message):
 def bracket():
   baseURL = 'https://challonge.com/rht'
   month = date.today().strftime("%B")[:3]
-  week = str(int(math.ceil(date.today().day // 7 + 1/ 2)))
+  week = str(int(math.ceil(date.today().day // 7 + 1 / 2)))
   year = str(date.today().year)
   sendmsg(baseURL + "_" + month + "_" + week + "_" + year)
 
