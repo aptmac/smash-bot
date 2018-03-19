@@ -3,7 +3,8 @@
 # Modified from: https://linuxacademy.com/blog/geek/creating-an-irc-bot-with-python3/
 
 # Import some necessary libraries.
-import socket, re, subprocess, os, time, threading, sys
+import socket, re, subprocess, os, time, threading, sys, math
+from datetime import date
 
 # Some basic variables used to configure the bot        
 server = "chat.freenode.net" # Server
@@ -64,8 +65,17 @@ def help(name,topic=''):
   # send help message in whisper to user.
   whisper(message, name)
 
+# send a message to all members
 def all(message):
   sendmsg("\(`O`)/: " + message + " @ " + get_names())
+
+# print the link to the current bracket
+def bracket():
+  baseURL = 'https://challonge.com/rht'
+  month = date.today().strftime("%B")[:3]
+  week = str(int(math.ceil(date.today().day // 7 + 1/ 2)))
+  year = str(date.today().year)
+  sendmsg(baseURL + "_" + month + "_" + week + "_" + year)
 
 # main functions of the bot
 def main():
@@ -97,6 +107,8 @@ def main():
         help(name, message[5:])
       elif message[:4] == '!all':
         all(message[5:])
+      elif message[:8] == '!bracket':
+        bracket()
       else:
       # if no command found, get 
         if len(name) < 17:
