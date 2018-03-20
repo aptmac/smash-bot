@@ -3,7 +3,7 @@
 # Modified from: https://linuxacademy.com/blog/geek/creating-an-irc-bot-with-python3/
 
 # Import some necessary libraries.
-import socket, re, subprocess, os, time, threading, sys, math
+import socket, re, subprocess, os, time, threading, sys, math, challonge
 from datetime import date
 
 # Some basic variables used to configure the bot        
@@ -60,7 +60,8 @@ def help(name,topic=''):
     message = 'Current valid functions include:'\
     ' | !all <message> to send a message to everyone in the channel'\
     ' | !bracket to get the current challonge url'\
-    ' | !hitbox <character> <move> to get a url to see move animation'
+    ' | !hitbox <character> <move> to get a url to see move animation'\
+    ' | !matches to see the current open matches'
   # if a help message is specified, let the user know it's not coded yet.
   else:
     message = "Feature not yet implemented, sorry. Please see the main help (message me with \'.help\')"
@@ -74,11 +75,18 @@ def all(message):
 
 # print the link to the current bracket
 def bracket():
-  baseURL = 'https://challonge.com/rht'
-  month = date.today().strftime("%B")[:3]
+  sendmsg(get_bracket_url())
+
+# get the bracket url
+def get_bracket_url():
+  base_url = 'https://challonge.com/'
+  return (base_url + get_bracket_id())
+
+def get_bracket_id():
+  month = date.today().strftime("%B")[:3].lower()
   week = str(int(math.ceil(date.today().day // 7 + 1 / 2)))
   year = str(date.today().year)
-  sendmsg(baseURL + "_" + month + "_" + week + "_" + year)
+  return ('rht_' + month + '_' + week + '_' + year)
 
 # library to map character argument to appropriate move viewer name
 def format_character(character):
@@ -202,6 +210,27 @@ def hitbox(message):
     ' | Usage: !hitbox <character> <move>'\
     ' | example: !hitbox cloud uair')
 
+# print the currently pending matches - TODO make work for doubles
+def matches():
+  bracket_url = get_bracket_url()
+  file = open('api-key.txt', 'r') 
+  apikey = file.read()
+  file.close()
+  # setup pychallonge
+  challonge.set_credentials("aptmac", apikey)
+  tournament = challonge.tournaments.show(get_bracket_id())
+  # get response with all participant info
+  participants = challonge.participants.index(tournament["id"])
+  players = {}
+  for participant in participants:
+    players[participant["id"]] = participant["display-name"]
+  # get the matches with state complete
+  matches = challonge.matches.index(tournament["id"])
+  sendmsg("\(`O`)/: Current open matches to be played are:")
+  for match in matches:
+    if match["state"] == 'open':
+      sendmsg(players[match["player1-id"]].split()[0] + ' vs. ' + players[match["player2-id"]].split()[0])
+
 # main functions of the bot
 def main():
   # start by joining the channel.
@@ -236,6 +265,8 @@ def main():
         bracket()
       elif message[:7] == '!hitbox':
         hitbox(message[8:])
+      elif message[:8] == '!matches':
+        matches()
       else:
       # if no command found, get 
         if len(name) < 17:

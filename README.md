@@ -27,6 +27,8 @@ Run `python smashbot.py` to start the bot, and if configured correctly, it shoul
 
 `!hitbox <character> <move>`: prints the URL to view the move in the struz smash 4 move viewer app
 
+`!matches`: prints the currently open matches
+
 ## Contributing
 This is a hacky bot, and isn't meant to be high quality. As a result, spaghetti code is encouraged! That means no tests, no segregation of code into other files (long live the monolith), regex is king, and it's a feature - not a bug. 
 
