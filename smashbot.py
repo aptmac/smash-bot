@@ -57,7 +57,10 @@ def help(name,topic=''):
   message = ''
   # if no help topic is specified, send general help message about the bot.
   if topic == '':
-    message = "Current valid functions include:\n!all <message> to send a message to everyone in the channel\n!bracket to get the current challonge url" 
+    message = 'Current valid functions include:'\
+    ' | !all <message> to send a message to everyone in the channel'\
+    ' | !bracket to get the current challonge url'\
+    ' | !hitbox <character> <move> to get a url to see move animation'
   # if a help message is specified, let the user know it's not coded yet.
   else:
     message = "Feature not yet implemented, sorry. Please see the main help (message me with \'.help\')"
@@ -76,6 +79,128 @@ def bracket():
   week = str(int(math.ceil(date.today().day // 7 + 1 / 2)))
   year = str(date.today().year)
   sendmsg(baseURL + "_" + month + "_" + week + "_" + year)
+
+# library to map character argument to appropriate move viewer name
+def format_character(character):
+  character = character.lower()
+  switcher = {
+    'bayo': 'bayonetta',
+    'bayonetta': 'bayonetta',
+    'bowser': 'koopa',
+    'koopa': 'koopa',
+    'captainfalcon': 'captain',
+    'charizard': 'lizardon',
+    'lizardon': 'lizardon',
+    'cloud': 'cloud',
+    'diddykong': 'diddy',
+    'diddy': 'diddy',
+    'donkeykong': 'donkey',
+    'donkey': 'donkey',
+    'dr.mario': 'mariod',
+    'drmario': 'mariod',
+    'falco': 'falco',
+    'fox': 'fox',
+    '20XX': 'fox',
+    'ganondorf': 'ganon',
+    'ganon': 'ganon',
+    'greninja': 'gekkouga',
+    'gekkouga': 'gekkouga',
+    'ike': 'ike',
+    'link': 'link',
+    'littlemac': 'littlemac',
+    'lucario': 'lucario',
+    'luigi': 'luigi',
+    'mario': 'mario',
+    'marth': 'marth',
+    'metaknight': 'metaknight',
+    'mewtwo': 'mewtwo',
+    'palutena': 'palutena',
+    'peach': 'peach',
+    'leo': 'peach',
+    'robin': 'reflet',
+    'rosalina': 'rosetta',
+    'luma': 'tico',
+    'roy': 'roy',
+    'ryu': 'ryu',
+    'sheik': 'sheik',
+    'shulk': 'shulk',
+    'sonic': 'sonic',
+    'gottagofast': 'sonic',
+    'toonlink': 'toonlink',
+    'tink': 'toonlink',
+    'yoshi': 'yoshi',
+    'zerosuitsamus': 'szerosuit',
+    'zss': 'szerosuit'
+  }
+  return switcher.get(character, 'error')
+
+  # library to map move argument to appropriate move viewer name
+def format_move(move):
+  move = move.lower()
+  switcher = {
+    # Grounded
+    'jab1': 'Attack11',
+    'jab2': 'Attack12',
+    'utilt': 'AttackHi3',
+    'dtilt': 'AttackLw3',
+    'ftilt': 'AttackS3',
+    'dash': 'AttackDash',
+    'dashattack': 'AttackDash',
+    # Aerials
+    'nair': 'AttackAirN',
+    'dair': 'AttackAirLw',
+    'uair': 'AttackAirHi',
+    'fair': 'AttackAirF',
+    'bair': 'AttackAirB',
+    # Smashes
+    'fsmash': 'AttackS4S',
+    'dsmash': 'AttackLw4',
+    'usmash': 'AttackHi4',
+    # Specials
+    'special': 'SpecialN',
+    'b': 'SpecialN',
+    'sidespecial': 'SpecialS',
+    'sideb': 'SpecialS',
+    'uspecial': 'SpecialHi',
+    'dspecial': 'SpecialLw',
+    # Throws
+    'grab': 'Catch',
+    'dashgrab': 'CatchDash',
+    'fthrow': 'ThrowF',
+    'uthrow': 'ThrowHi',
+    'dthrow': 'ThrowLw',
+    'bthrow': 'ThrowB'
+  }
+  return switcher.get(move, 'error')
+
+def hitbox(message):
+  baseURL = 'https://struz.github.io/smash-move-viewer/#/v1'
+  try:
+    message = message.split()
+    character = format_character(message[0])
+    move = format_move(message[1])
+    if character != 'error' and move != 'error':
+      sendmsg(baseURL + '/' + character + '/' + move + '/1?speed=0.25')
+    else: 
+      if character == 'error':
+        sendmsg('Error: invalid character name has been entered.')
+        sendmsg('Valid characters are: '\
+        'bayonetta, bowser, captainfalcon, charizard, cloud, diddykong, donkeykong, '\
+        'dr.mario, falco, fox, ganondorf, greninja, ike, link, littlemac, lucario, '\
+        'luigi, mario, marth, metaknight, mewtwo, palutena, peach, robin, rosalina, '\
+        'luma, roy, ryu, sheik, shulk, sonic, toonlink, yoshi, zerosuitsamus')
+      if move == 'error':
+        sendmsg('Error: invalid move name has been entered.')
+        sendmsg('Valid moves are: '\
+          'jab1, jab2, ftilt, utilt, dtilt, dashattack, '\
+          'nair, fair, dair, uair, bair, '\
+          'fsmash, dsmash, usmash, '\
+          'special, sidespecial, uspecial, dspecial, '\
+          'grab, dashgrab, fthrow, uthrow, dthrow, bthrow')
+  except IndexError:
+    sendmsg('Error: invalid command.'\
+    ' | Usage: !hitbox <character> <move>'\
+    ' | example: !hitbox cloud uair')
 
 # main functions of the bot
 def main():
@@ -109,6 +234,8 @@ def main():
         all(message[5:])
       elif message[:8] == '!bracket':
         bracket()
+      elif message[:7] == '!hitbox':
+        hitbox(message[8:])
       else:
       # if no command found, get 
         if len(name) < 17:
