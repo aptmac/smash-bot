@@ -8,9 +8,11 @@ Run `python smashbot.py` to start the bot, and if configured correctly, it shoul
 ## Commands
 `!help`: whispers the user with a description of bot functionality
 
-`!all`: broadcasts a message and tags every member of the channel
+`!all <message>`: broadcasts a message and tags every member of the channel
 
 `!bracket`: prints the URL of the current challonge bracket
+
+`!hitbox <character> <move>`: prints the URL to view the move in the smash 4 move viewer app
 
 ## Contributing
 This is a hacky bot, and isn't meant to be high quality. As a result, spaghetti code is encouraged! That means no tests, no segregation of code into other files (long live the monolith), regex is king, and it's a feature - not a bug. 
