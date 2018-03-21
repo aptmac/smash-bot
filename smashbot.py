@@ -35,21 +35,21 @@ def get_names(): # get list of users in a channel
   return re.search(".*" + channel + " :(.*)", resp, re.IGNORECASE).group(1)
 
 # log chat messages
-def logger(name, msg):
-  # loop through the content of the chat log and reduce to 100 lines, starting with oldest. --Definitely a better way to do this, needs improvement.
-  irclog = open("ircchat.log", 'r')
-  content = irclog.readlines()
-  irclog.close()
-  # loop through the content of the chat log and reduce to 100 lines, starting with oldest. --Definitely a better way to do this, needs improvement.
-  irclog = open("ircchat.log", "w")
-  while len(content) > 100:
-    content.remove(content[0])
-  if len(content) > 0:
-    for i in content:
-      irclog.write(i.strip('\n\r') + '\n')
-  # write newest messge to log.
-  irclog.write(name + ':' + msg.strip('\n\r'))
-  irclog.close()
+# def logger(name, msg):
+#   # loop through the content of the chat log and reduce to 100 lines, starting with oldest. --Definitely a better way to do this, needs improvement.
+#   irclog = open("ircchat.log", 'r')
+#   content = irclog.readlines()
+#   irclog.close()
+#   # loop through the content of the chat log and reduce to 100 lines, starting with oldest. --Definitely a better way to do this, needs improvement.
+#   irclog = open("ircchat.log", "w")
+#   while len(content) > 100:
+#     content.remove(content[0])
+#   if len(content) > 0:
+#     for i in content:
+#       irclog.write(i.strip('\n\r') + '\n')
+#   # write newest messge to log.
+#   irclog.write(name + ':' + msg.strip('\n\r'))
+#   irclog.close()
 
 # send help message to users
 def help(name,topic=''):
@@ -84,7 +84,7 @@ def get_bracket_url():
 
 def get_bracket_id():
   month = date.today().strftime("%B")[:3].lower()
-  week = str(int(math.ceil(date.today().day // 7 + 1 / 2)))
+  week = str(int((math.ceil(date.today().day // 7 + 1) / 2)))
   year = str(date.today().year)
   return ('rht_' + month + '_' + week + '_' + year)
 
@@ -151,7 +151,7 @@ def format_move(move):
     'jab2': 'Attack12',
     'utilt': 'AttackHi3',
     'dtilt': 'AttackLw3',
-    'ftilt': 'AttackS3',
+    'ftilt': 'AttackS3S',
     'dash': 'AttackDash',
     'dashattack': 'AttackDash',
     # Aerials
@@ -217,19 +217,22 @@ def matches():
   apikey = file.read()
   file.close()
   # setup pychallonge
-  challonge.set_credentials("aptmac", apikey)
-  tournament = challonge.tournaments.show(get_bracket_id())
-  # get response with all participant info
-  participants = challonge.participants.index(tournament["id"])
-  players = {}
-  for participant in participants:
-    players[participant["id"]] = participant["display-name"]
-  # get the matches with state complete
-  matches = challonge.matches.index(tournament["id"])
-  sendmsg("\(`O`)/: Current open matches to be played are:")
-  for match in matches:
-    if match["state"] == 'open':
-      sendmsg(players[match["player1-id"]].split()[0] + ' vs. ' + players[match["player2-id"]].split()[0])
+  try:
+    challonge.set_credentials("aptmac", apikey)
+    tournament = challonge.tournaments.show(get_bracket_id())
+    # get response with all participant info
+    participants = challonge.participants.index(tournament["id"])
+    players = {}
+    for participant in participants:
+      players[participant["id"]] = participant["display-name"]
+    # get the matches with state complete
+    matches = challonge.matches.index(tournament["id"])
+    sendmsg("\(`O`)/: Current open matches to be played are:")
+    for match in matches:
+      if match["state"] == 'open':
+        sendmsg(players[match["player1-id"]].split()[0] + ' vs. ' + players[match["player2-id"]].split()[0])
+  except:
+    sendmsg('Error: something went wrong with challonge :/')
 
 # main functions of the bot
 def main():
@@ -270,7 +273,7 @@ def main():
       else:
       # if no command found, get 
         if len(name) < 17:
-          logger(name, message)
+          # logger(name, message)
           # if the final message is from me and says 'gtfo [bot]' stop the bot and exit. Needs adjustment so it works for main user account and not hardcoded username.
           if name.lower() == "almac" and message[:5+len(botnick)] == "gtfo %s" % botnick:
             sendmsg("Oh...okay... :'(")
