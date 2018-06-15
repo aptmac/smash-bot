@@ -34,23 +34,6 @@ def get_names(): # get list of users in a channel
   resp = ircsock.recv(2048)
   return re.search(".*" + channel + " :(.*)", resp, re.IGNORECASE).group(1)
 
-# log chat messages
-# def logger(name, msg):
-#   # loop through the content of the chat log and reduce to 100 lines, starting with oldest. --Definitely a better way to do this, needs improvement.
-#   irclog = open("ircchat.log", 'r')
-#   content = irclog.readlines()
-#   irclog.close()
-#   # loop through the content of the chat log and reduce to 100 lines, starting with oldest. --Definitely a better way to do this, needs improvement.
-#   irclog = open("ircchat.log", "w")
-#   while len(content) > 100:
-#     content.remove(content[0])
-#   if len(content) > 0:
-#     for i in content:
-#       irclog.write(i.strip('\n\r') + '\n')
-#   # write newest messge to log.
-#   irclog.write(name + ':' + msg.strip('\n\r'))
-#   irclog.close()
-
 # send help message to users
 def help(name,topic=''):
   # set default help message to blank.
@@ -61,7 +44,8 @@ def help(name,topic=''):
     ' | !all <message> to send a message to everyone in the channel'\
     ' | !bracket to get the current challonge url'\
     ' | !hitbox <character> <move> to get a url to see move animation'\
-    ' | !matches to see the current open matches'
+    ' | !matches to see the current open matches'\
+    ' | !results to see results of complete matches (of current tournament)'
   # if a help message is specified, let the user know it's not coded yet.
   else:
     message = "Feature not yet implemented, sorry. Please see the main help (message me with \'.help\')"
@@ -142,7 +126,7 @@ def format_character(character):
   }
   return switcher.get(character, 'error')
 
-  # library to map move argument to appropriate move viewer name
+# library to map move argument to appropriate move viewer name
 def format_move(move):
   move = move.lower()
   switcher = {
@@ -210,8 +194,34 @@ def hitbox(message):
     ' | Usage: !hitbox <character> <move>'\
     ' | example: !hitbox cloud uair')
 
-# print the currently pending matches - TODO make work for doubles
-def matches():
+# print the results of completed matches
+def finished_matches(flag):
+  bracket_url = get_bracket_url()
+  file = open('api-key.txt', 'r')
+  apikey = file.read()
+  file.close()
+  # setup pychallonge
+  try:
+    challonge.set_credentials("aptmac", apikey)
+    tournament = challonge.tournaments.show(get_bracket_id())
+    # get response with all participant info
+    participants = challonge.participants.index(tournament["id"])
+    players = {}
+    for participant in participants:
+      players[participant["id"]] = participant["display-name"]
+    # get the matches with state complete
+    matches = challonge.matches.index(tournament["id"])
+    sendmsg("\(`O`)/: Completed matches this tournament are:")
+    for match in matches:
+      if match["state"] == 'complete':
+        score = match["score-csv"]
+        sendmsg(players[match["player1-id"]].split()[0][::-1] + ' ' + score + ' ' + players[match["player2-id"]].split()[0][::-1])
+        time.sleep(1)
+  except:
+    sendmsg('Error: something went wrong with challonge :/')
+
+# print the currently pending matches
+def pending_matches():
   bracket_url = get_bracket_url()
   file = open('api-key.txt', 'r') 
   apikey = file.read()
@@ -269,7 +279,9 @@ def main():
       elif message[:7] == '!hitbox':
         hitbox(message[8:])
       elif message[:8] == '!matches':
-        matches()
+        pending_matches()
+      elif message[:8] == '!results':
+        finished_matches(message[8:])
       else:
       # if no command found, get 
         if len(name) < 17:
