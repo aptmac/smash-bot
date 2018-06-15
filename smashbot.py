@@ -3,7 +3,7 @@
 # Modified from: https://linuxacademy.com/blog/geek/creating-an-irc-bot-with-python3/
 
 # Import some necessary libraries.
-import socket, re, subprocess, os, time, threading, sys, math, challonge
+import socket, re, subprocess, os, time, threading, sys, math, challonge, datetime
 from datetime import date
 
 # Some basic variables used to configure the bot        
@@ -194,6 +194,13 @@ def hitbox(message):
     ' | Usage: !hitbox <character> <move>'\
     ' | example: !hitbox cloud uair')
 
+# print the time remaining until smash ultimate releases
+def countdown():
+  start = datetime.datetime.now()
+  end = datetime.datetime(2018, 12, 7)
+  elapsed = end - start
+  sendmsg(str(elapsed.days) + ' days until Super Smash Bros. Ultimate releases!')
+
 # print the results of completed matches
 def finished_matches(flag):
   bracket_url = get_bracket_url()
@@ -202,6 +209,7 @@ def finished_matches(flag):
   file.close()
   # setup pychallonge
   try:
+    sendmsg("fetching match results ..")
     challonge.set_credentials("aptmac", apikey)
     tournament = challonge.tournaments.show(get_bracket_id())
     # get response with all participant info
@@ -211,12 +219,32 @@ def finished_matches(flag):
       players[participant["id"]] = participant["display-name"]
     # get the matches with state complete
     matches = challonge.matches.index(tournament["id"])
-    sendmsg("\(`O`)/: Completed matches this tournament are:")
-    for match in matches:
-      if match["state"] == 'complete':
-        score = match["score-csv"]
-        sendmsg(players[match["player1-id"]].split()[0][::-1] + ' ' + score + ' ' + players[match["player2-id"]].split()[0][::-1])
-        time.sleep(1)
+
+    # if showing --all matches
+    if flag.strip() == '--all':
+      sendmsg("\(`O`)/: All completed matches this tournament are:")
+      for match in matches:
+        if match["state"] == 'complete':
+          score = match["scores-csv"]
+          if ',' in score:
+            scores = score.split(',')
+            score = scores[len(scores)-1]
+          sendmsg(players[match["player1-id"]].split()[0][::-1] + ' ' + score + ' ' + players[match["player2-id"]].split()[0][::-1])
+          time.sleep(0.5)
+    else:
+      sendmsg("\(`O`)/: The last 5 completed matches this tournament are:")
+      i = 0
+      for match in reversed(matches):
+        if match["state"] == 'complete':
+          score = match["scores-csv"]
+          if ',' in score:
+            scores = score.split(',')
+            score = scores[len(scores)-1]
+          sendmsg(players[match["player1-id"]].split()[0][::-1] + ' ' + score + ' ' + players[match["player2-id"]].split()[0][::-1])
+          time.sleep(0.5)
+          i = i + 1
+        if i == 5:
+          break
   except:
     sendmsg('Error: something went wrong with challonge :/')
 
@@ -282,6 +310,8 @@ def main():
         pending_matches()
       elif message[:8] == '!results':
         finished_matches(message[8:])
+      elif message[:10] == '!countdown':
+        countdown()
       else:
       # if no command found, get 
         if len(name) < 17:
